@@ -1055,7 +1055,7 @@ public final class StackMapGenerator {
             }
             for (int i = 0; i < methodDesc.parameterCount(); i++) {
                 var desc = methodDesc.parameterType(i);
-                if (desc == CD_void) throw new AssertionError("Should not reach here");
+                assert desc != CD_void;
                 Type type;
                 if (desc instanceof PrimitiveClassDescImpl) {
                     if (desc == CD_long) {
