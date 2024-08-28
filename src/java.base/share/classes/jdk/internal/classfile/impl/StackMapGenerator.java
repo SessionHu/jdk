@@ -45,6 +45,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import jdk.internal.constant.PrimitiveClassDescImpl;
 import jdk.internal.constant.ReferenceClassDescImpl;
 
 import static java.lang.classfile.ClassFile.*;
@@ -950,32 +951,28 @@ public final class StackMapGenerator {
         }
 
         Frame pushStack(ClassDesc desc) {
-            return switch (desc.descriptorString().charAt(0)) {
-                case 'J' ->
-                    pushStack(Type.LONG_TYPE, Type.LONG2_TYPE);
-                case 'D' ->
-                    pushStack(Type.DOUBLE_TYPE, Type.DOUBLE2_TYPE);
-                case 'I', 'Z', 'B', 'C', 'S' ->
-                    pushStack(Type.INTEGER_TYPE);
-                case 'F' ->
-                    pushStack(Type.FLOAT_TYPE);
-                case 'V' ->
-                    this;
-                default ->
-                    pushStack(Type.referenceType(desc));
-            };
+            if (desc == CD_long)   return pushStack(Type.LONG_TYPE, Type.LONG2_TYPE);
+            if (desc == CD_double) return pushStack(Type.DOUBLE_TYPE, Type.DOUBLE2_TYPE);
+            return desc == CD_void ? this
+                 : pushStack(
+                         desc == CD_float ? Type.FLOAT_TYPE :
+                         desc instanceof PrimitiveClassDescImpl ? Type.INTEGER_TYPE : Type.referenceType(desc));
         }
 
         Frame pushStack(Type type) {
+            int stackSize = this.stackSize;
             checkStack(stackSize);
-            stack[stackSize++] = type;
+            stack[stackSize] = type;
+            this.stackSize = stackSize + 1;
             return this;
         }
 
         Frame pushStack(Type type1, Type type2) {
+            int stackSize = this.stackSize;
             checkStack(stackSize + 1);
-            stack[stackSize++] = type1;
-            stack[stackSize++] = type2;
+            stack[stackSize] = type1;
+            stack[stackSize + 1] = type2;
+            this.stackSize = stackSize + 2;
             return this;
         }
 
