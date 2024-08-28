@@ -955,8 +955,9 @@ public final class StackMapGenerator {
             if (desc == CD_double) return pushStack(Type.DOUBLE_TYPE, Type.DOUBLE2_TYPE);
             return desc == CD_void ? this
                  : pushStack(
-                         desc == CD_float ? Type.FLOAT_TYPE :
-                         desc instanceof PrimitiveClassDescImpl ? Type.INTEGER_TYPE : Type.referenceType(desc));
+                         desc instanceof PrimitiveClassDescImpl
+                                 ? (desc == CD_float ? Type.FLOAT_TYPE : Type.INTEGER_TYPE)
+                                 : Type.referenceType(desc));
         }
 
         Frame pushStack(Type type) {
