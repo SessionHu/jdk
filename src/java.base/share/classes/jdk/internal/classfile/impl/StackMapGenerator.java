@@ -1055,23 +1055,26 @@ public final class StackMapGenerator {
             }
             for (int i = 0; i < methodDesc.parameterCount(); i++) {
                 var desc = methodDesc.parameterType(i);
-                if (!desc.isPrimitive()) {
-                    setLocalRawInternal(localsSize++, Type.referenceType(desc));
-                } else switch (desc.descriptorString().charAt(0)) {
-                    case 'J' -> {
-                        setLocalRawInternal(localsSize++, Type.LONG_TYPE);
-                        setLocalRawInternal(localsSize++, Type.LONG2_TYPE);
+                if (desc == CD_void) throw new AssertionError("Should not reach here");
+                Type type;
+                if (desc instanceof PrimitiveClassDescImpl) {
+                    if (desc == CD_long) {
+                        setLocalRawInternal(localsSize, Type.LONG_TYPE);
+                        setLocalRawInternal(localsSize + 1, Type.LONG2_TYPE);
+                        localsSize += 2;
+                        continue;
                     }
-                    case 'D' -> {
-                        setLocalRawInternal(localsSize++, Type.DOUBLE_TYPE);
-                        setLocalRawInternal(localsSize++, Type.DOUBLE2_TYPE);
+                    if (desc == CD_double) {
+                        setLocalRawInternal(localsSize, Type.DOUBLE_TYPE);
+                        setLocalRawInternal(localsSize + 1, Type.DOUBLE2_TYPE);
+                        localsSize += 2;
+                        continue;
                     }
-                    case 'I', 'Z', 'B', 'C', 'S' ->
-                        setLocalRawInternal(localsSize++, Type.INTEGER_TYPE);
-                    case 'F' ->
-                        setLocalRawInternal(localsSize++, Type.FLOAT_TYPE);
-                    default -> throw new AssertionError("Should not reach here");
+                    type = desc == CD_float ? Type.FLOAT_TYPE : Type.INTEGER_TYPE;
+                } else {
+                    type = Type.referenceType(desc);
                 }
+                setLocalRawInternal(localsSize++, type);
             }
             this.localsSize = localsSize;
         }
